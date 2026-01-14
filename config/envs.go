@@ -2,7 +2,6 @@ package config
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"strconv"
 	"strings"
@@ -11,7 +10,7 @@ import (
 	"github.com/joho/godotenv"
 )
 
-// Config holds all configuration
+// Config holds all configuration.
 type Config struct {
 	Server   ServerConfig
 	Database DatabaseConfig
@@ -40,14 +39,17 @@ type AppConfig struct {
 var Envs *Config
 var validate *validator.Validate
 
-// LoadConfig initializes and validates configuration
+const defaultPort = 3000
+const defaultMongoMaxPool = 10
+
+// LoadConfig initializes and validates configuration.
 func LoadConfig() error {
 	// Load .env file (optional in production)
 	_ = godotenv.Load()
 
 	config := &Config{
 		Server: ServerConfig{
-			Port:  getEnvAsInt("PORT", 3000),
+			Port:  getEnvAsInt("PORT", defaultPort),
 			Stage: getEnv("STAGE", "dev"),
 		},
 		Database: DatabaseConfig{
@@ -55,7 +57,7 @@ func LoadConfig() error {
 			Password: getEnv("MONGO_PASSWORD", ""),
 			Database: getEnv("MONGO_DATABASE", ""),
 			URI:      getEnv("MONGO_URI", ""),
-			MaxPool:  getEnvAsInt("MONGO_MAX_POOL", 10),
+			MaxPool:  getEnvAsInt("MONGO_MAX_POOL", defaultMongoMaxPool),
 		},
 		App: AppConfig{
 			IsProd:   getEnv("STAGE", "dev") == "prod",
@@ -67,9 +69,6 @@ func LoadConfig() error {
 	// Initialize validator
 	validate = validator.New()
 
-	// Register custom validators
-	registerCustomValidators()
-
 	// Validate configuration
 	if err := validate.Struct(config); err != nil {
 		return formatValidationError(err)
@@ -79,22 +78,7 @@ func LoadConfig() error {
 	return nil
 }
 
-// registerCustomValidators adds custom validation rules
-func registerCustomValidators() {
-	// Example: validate stage-specific requirements
-	if err := validate.RegisterValidation("secure_if_prod", func(fl validator.FieldLevel) bool {
-		stage := fl.Parent().FieldByName("Stage").String()
-		secure := fl.Field().Bool()
-		if stage == "prod" {
-			return secure
-		}
-		return true
-	}); err != nil {
-		log.Fatalf("Failed to register validation: %v", err)
-	}
-}
-
-// formatValidationError provides clear error messages
+// formatValidationError provides clear error messages.
 func formatValidationError(err error) error {
 	var errors []string
 
@@ -121,7 +105,7 @@ func formatValidationError(err error) error {
 	return fmt.Errorf("config validation errors:\n  - %s", strings.Join(errors, "\n  - "))
 }
 
-// Helper functions
+// Helper functions.
 func getEnv(key, defaultValue string) string {
 	if value := os.Getenv(key); value != "" {
 		return value
@@ -147,7 +131,7 @@ func getEnvAsInt(key string, defaultValue int) int {
 // 	return defaultValue
 // }
 
-// MustLoad panics if config fails to load (use in main.go)
+// MustLoad panics if config fails to load (use in main.go).
 func MustLoad() *Config {
 	if err := LoadConfig(); err != nil {
 		panic(fmt.Sprintf("Failed to load config: %v", err))

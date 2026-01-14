@@ -2,24 +2,26 @@ package main
 
 import (
 	"fmt"
-	"log"
+	"log/slog"
+	"os"
 
 	"github.com/gin-gonic/gin"
+
 	"glasdou.wtf/template/config"
 	"glasdou.wtf/template/modules"
 )
 
 func main() {
+	logger := slog.New(slog.NewTextHandler(os.Stderr, nil))
 	config.MustLoad()
-	log.Println("Configuration loaded successfully")
+	logger.Info("Configuration loaded successfully")
 
 	if err := config.LoadConfig(); err != nil {
-		log.Fatalf("App configuration validation failed:\n\n%v", err)
+		logger.Error("App configuration validation failed:\n\n", "error", err)
 	}
 
 	config.InitDatabase()
-	log.Println("Database initialized successfully")
-
+	logger.Info("Database initialized successfully")
 	gin.SetMode(config.Envs.App.GinMode)
 	server := gin.Default()
 	v1 := server.Group("/api/v1")
@@ -28,6 +30,8 @@ func main() {
 
 	port := config.Envs.Server.Port
 	if err := server.Run(fmt.Sprintf(":%d", port)); err != nil {
-		log.Fatalf("Failed to start server: %v", err)
+		logger.Error("Failed to start server:", "error", err)
 	}
+
+	logger.Info("Server is running on port", "port", port)
 }

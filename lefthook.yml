@@ -7,12 +7,12 @@ pre-commit:
   jobs:
     - name: Format Go files
       glob: '{main.go,{config,modules}/**/*.go}'
-      run: go fmt {staged_files}
+      run: go fmt ./...
       stage_fixed: true
 
     - name: Vet Go code
       glob: '{main.go,{config,modules}/**/*.go}'
-      run: go vet {staged_files}
+      run: go vet ./...
 
     - name: Run golangci-lint
       glob: '{main.go,{config,modules}/**/*.go}'
@@ -22,7 +22,7 @@ pre-commit:
           echo "   Install it with: go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest"
           exit 1
         fi
-        golangci-lint run --new-from-rev=HEAD --fix {staged_files}
+        golangci-lint run --new-from-rev=HEAD --fix ./...
       stage_fixed: true
 
     - name: Check go.mod

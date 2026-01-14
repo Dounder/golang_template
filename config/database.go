@@ -1,7 +1,8 @@
 package config
 
 import (
-	"log"
+	"log/slog"
+	"os"
 
 	"go.mongodb.org/mongo-driver/v2/mongo"
 	"go.mongodb.org/mongo-driver/v2/mongo/options"
@@ -10,36 +11,37 @@ import (
 var client *mongo.Client
 
 func InitDatabase() {
+	logger := slog.New(slog.NewTextHandler(os.Stderr, nil))
 	uri := Envs.Database.URI
-	docs := "www.mongodb.com/docs/drivers/go/current"
+	docs := "https://www.mongodb.com/docs/mongodb-shell/write-scripts/env-variables/"
 
 	if uri == "" {
-		log.Fatal("'MONGODB_URI' environment variable missing. " +
-			"See: " + docs +
-			"usage-examples/#environment-variable")
+		logger.Error("'MONGODB_URI' environment variable missing", "docs", docs)
+		os.Exit(1)
 	}
 
 	var err error
 	client, err = mongo.Connect(options.Client().ApplyURI(uri))
 
 	if err != nil {
-		log.Panicf("Failed to connect to MongoDB: %v", err)
+		logger.Error("Failed to connect to MongoDB", "error", err)
+		os.Exit(1)
 	}
 
-	log.Println("Connected to MongoDB successfully")
+	logger.Info("Connected to MongoDB successfully")
 }
 
-// MongoClient returns the MongoDB client instance
+// MongoClient returns the MongoDB client instance.
 func MongoClient() *mongo.Client {
 	return client
 }
 
-// GetDatabase returns the database instance
+// GetDatabase returns the database instance.
 func GetDatabase() *mongo.Database {
 	return client.Database(Envs.Database.Database)
 }
 
-// GetCollection returns a collection from the database
+// GetCollection returns a collection from the database.
 func GetCollection(name string) *mongo.Collection {
 	return GetDatabase().Collection(name)
 }

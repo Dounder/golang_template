@@ -13,8 +13,9 @@ func healthCheck() types.HealthCheckResponse {
 }
 
 func checkDbConnection() types.HealthCheckResponse {
+	const timeout = 5 * time.Second
 	client := config.MongoClient()
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 
 	if err := client.Ping(ctx, nil); err != nil {

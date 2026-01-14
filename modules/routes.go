@@ -2,6 +2,7 @@ package modules
 
 import (
 	"github.com/gin-gonic/gin"
+
 	"glasdou.wtf/template/modules/health"
 )
 
