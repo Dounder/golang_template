@@ -31,6 +31,3 @@ func main() {
 		log.Fatalf("Failed to start server: %v", err)
 	}
 }
-
-// Test comment for lefthook demo
-// This should be skipped
