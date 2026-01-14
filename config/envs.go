@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"strconv"
 	"strings"
@@ -81,14 +82,16 @@ func LoadConfig() error {
 // registerCustomValidators adds custom validation rules
 func registerCustomValidators() {
 	// Example: validate stage-specific requirements
-	validate.RegisterValidation("secure_if_prod", func(fl validator.FieldLevel) bool {
+	if err := validate.RegisterValidation("secure_if_prod", func(fl validator.FieldLevel) bool {
 		stage := fl.Parent().FieldByName("Stage").String()
 		secure := fl.Field().Bool()
 		if stage == "prod" {
 			return secure
 		}
 		return true
-	})
+	}); err != nil {
+		log.Fatalf("Failed to register validation: %v", err)
+	}
 }
 
 // formatValidationError provides clear error messages

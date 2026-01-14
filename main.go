@@ -27,6 +27,9 @@ func main() {
 	modules.RegisterRoutes(v1)
 
 	port := config.Envs.Server.Port
-	server.Run(fmt.Sprintf(":%d", port))
-	log.Printf("Server running on port %d", port)
+	if err := server.Run(fmt.Sprintf(":%d", port)); err != nil {
+		log.Fatalf("Failed to start server: %v", err)
+	}
 }
+
+// Test comment for lefthook demo

@@ -1,0 +1,59 @@
+# Lefthook configuration for Go project
+# https://github.com/evilmartians/lefthook
+
+# Pre-commit hooks - run before commit
+pre-commit:
+  parallel: true
+  jobs:
+    - name: Format Go files
+      glob: '*.go'
+      run: go fmt {staged_files}
+      stage_fixed: true
+
+    - name: Vet Go code
+      glob: '*.go'
+      run: go vet ./...
+
+    - name: Run golangci-lint
+      glob: '*.go'
+      run: |
+        if ! command -v golangci-lint > /dev/null 2>&1; then
+          echo "❌ golangci-lint is not installed!"
+          echo "   Install it with: go install https://golangci-lint.run/docs/welcome/install/local/"
+          exit 1
+        fi
+        golangci-lint run --fix
+      stage_fixed: true
+
+    - name: Check go.mod
+      glob: 'go.{mod,sum}'
+      run: go mod tidy && git add go.mod go.sum
+
+# Pre-push hooks - run before push
+pre-push:
+  parallel: true
+  jobs:
+    # - name: Run tests
+    #   run: go test -race -v ./...
+
+    - name: Check build
+      run: go build -v ./...
+
+# Commit-msg hooks - validate commit message
+commit-msg:
+  jobs:
+    - name: Check commit message
+      run: |
+        commit_msg=$(cat {1})
+        if ! echo "$commit_msg" | grep -qE '^(feat|fix|docs|style|refactor|test|chore|perf|ci|build|revert)(\(.+\))?: .+'; then
+          echo "❌ Commit message must follow conventional commits format:"
+          echo "   <type>[optional scope]: <description>"
+          echo ""
+          echo "   Examples:"
+          echo "   feat: add new feature"
+          echo "   fix(api): resolve bug in endpoint"
+          echo "   docs: update README"
+          echo ""
+          echo "   Types: feat, fix, docs, style, refactor, test, chore, perf, ci, build, revert"
+          exit 1
+        fi
