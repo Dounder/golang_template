@@ -1,0 +1,57 @@
+# Builder stage - compiles the Go application
+FROM golang:1.25.5-alpine AS builder
+
+WORKDIR /usr/src/app
+
+# Install build dependencies (git for go modules, ca-certificates for HTTPS)
+RUN apk add --no-cache git ca-certificates tzdata
+
+# Copy go module files
+COPY go.mod go.sum ./
+
+# Download dependencies with verification
+RUN go mod download && go mod verify
+
+# Copy source code
+COPY . .
+
+# Build the application with optimizations
+# CGO_ENABLED=0 for static binary (no C dependencies)
+# -ldflags="-s -w" strips debug info and symbol table for smaller binary
+# -trimpath removes file system paths from binary for reproducible builds
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build \
+  -ldflags="-s -w" \
+  -trimpath \
+  -o /usr/src/app/bin/app \
+  ./main.go
+
+# Final production image - minimal runtime environment
+FROM gcr.io/distroless/static-debian12:nonroot AS production
+
+WORKDIR /app
+
+# Copy CA certificates for HTTPS connections (e.g., MongoDB Atlas)
+COPY --from=builder --chown=nonroot:nonroot /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
+
+# Copy timezone data for TZ environment variable
+COPY --from=builder --chown=nonroot:nonroot /usr/share/zoneinfo /usr/share/zoneinfo
+
+# Copy the compiled binary
+COPY --from=builder --chown=nonroot:nonroot /usr/src/app/bin/app /app/app
+
+# Copy any config files if needed (uncomment if you have them)
+# COPY --from=builder --chown=nonroot:nonroot /usr/src/app/config ./config
+
+# Set environment variables
+ENV GIN_MODE=release \
+  PORT=3000 \
+  TZ=America/Guatemala
+
+# Expose port
+EXPOSE 3000
+
+# Run as non-root user (distroless nonroot image)
+USER nonroot:nonroot
+
+# Start the application
+ENTRYPOINT ["/app/app"]

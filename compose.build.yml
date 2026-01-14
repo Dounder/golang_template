@@ -1,0 +1,11 @@
+services:
+  go_template_name:
+    build:
+      context: .
+      dockerfile: dockerfile.prod
+    image: drglasdou/go_template:${VERSION:-dev}
+  go_template_latest:
+    build:
+      context: .
+      dockerfile: dockerfile.prod
+    image: drglasdou/go_template:latest

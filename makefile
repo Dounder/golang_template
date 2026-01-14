@@ -6,6 +6,8 @@
 # Variables
 BINARY_NAME=glasdou_template
 MAIN_PATH=./main.go
+VERSION?=$(shell git describe --tags --always --dirty 2>/dev/null || echo "dev")
+REGISTRY=drglasdou/go_template
 
 # Default target
 help: ## Show this help message
@@ -61,9 +63,9 @@ mod: ## Tidy go modules
 	@go mod verify
 
 # Docker Commands
-docker-build: ## Build Docker image
-	@echo "Building Docker image..."
-	@docker compose build
+docker-build: ## Build Docker production image (version from git tags)
+	@echo "Building Docker image version: $(VERSION)"
+	@VERSION=$(VERSION) docker compose -f compose.build.yml build
 
 docker-run: ## Run the application with Docker Compose
 	@docker compose up -d
@@ -76,3 +78,11 @@ docker-logs: ## Show Docker container logs
 
 docker-clean: ## Stop containers and remove volumes
 	@docker compose down -v
+
+docker-push: ## Push Docker image to registry
+	@echo "Pushing version: $(VERSION)"
+	@docker push $(REGISTRY):$(VERSION)
+	@docker push $(REGISTRY):latest
+
+version: ## Show current version from git tags
+	@echo $(VERSION)
