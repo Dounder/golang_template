@@ -23,3 +23,5 @@ func checkDbConnection() types.HealthCheckResponse {
 
 	return types.HealthCheckResponse{"database": "connected"}
 }
+
+// Test lefthook with staged files
