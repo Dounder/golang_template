@@ -67,17 +67,22 @@ docker-build: ## Build Docker production image (version from git tags)
 	@echo "Building Docker image version: $(VERSION)"
 	@VERSION=$(VERSION) docker compose -f compose.build.yml build
 
-docker-run: ## Run the application with Docker Compose
-	@docker compose up -d
+docker-mongo: ## Start only MongoDB container
+	@echo "Starting MongoDB..."
+	@docker compose -f compose.yml up -d
+
+docker-run-prod: ## Run production image locally (simulates prod environment)
+	@echo "Starting production environment (version: $(VERSION))..."
+	@VERSION=$(VERSION) docker compose -f compose.yml -f compose.run.yml up -d
 
 docker-stop: ## Stop all Docker containers
-	@docker compose down
+	@docker compose -f compose.yml -f compose.run.yml down || docker compose -f compose.yml down
 
 docker-logs: ## Show Docker container logs
-	@docker compose logs -f
+	@docker compose -f compose.yml -f compose.run.yml logs -f
 
 docker-clean: ## Stop containers and remove volumes
-	@docker compose down -v
+	@docker compose -f compose.yml -f compose.run.yml down -v || docker compose -f compose.yml down -v
 
 docker-push: ## Push Docker image to registry
 	@echo "Pushing version: $(VERSION)"

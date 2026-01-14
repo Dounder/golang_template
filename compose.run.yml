@@ -1,0 +1,13 @@
+services:
+  go_template_app:
+    image: drglasdou/go_template:${VERSION:-latest}
+    container_name: go_template_app
+    restart: always
+    env_file:
+      - .env
+    ports:
+      - '${PORT:-3000}:3000'
+    depends_on:
+      - go_template_mongo
+    networks:
+      - mongo-network
