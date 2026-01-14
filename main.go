@@ -33,3 +33,4 @@ func main() {
 }
 
 // Test comment for lefthook demo
+// This should be skipped
