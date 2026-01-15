@@ -76,13 +76,13 @@ docker-run-prod: ## Run production image locally (simulates prod environment)
 	@VERSION=$(VERSION) docker compose -f compose.yml -f compose.prod.yml up -d
 
 docker-stop: ## Stop all Docker containers
-	@docker compose -f compose.yml -f compose.run.yml down || docker compose -f compose.yml down
+	@docker compose -f compose.yml -f compose.prod.yml down || docker compose -f compose.yml down
 
 docker-logs: ## Show Docker container logs
-	@docker compose -f compose.yml -f compose.run.yml logs -f
+	@docker compose -f compose.yml -f compose.prod.yml logs -f
 
 docker-clean: ## Stop containers and remove volumes
-	@docker compose -f compose.yml -f compose.run.yml down -v || docker compose -f compose.yml down -v
+	@docker compose -f compose.yml -f compose.prod.yml down -v || docker compose -f compose.yml down -v
 
 docker-push: ## Push Docker image to registry
 	@echo "Pushing version: $(VERSION)"
