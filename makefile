@@ -73,7 +73,7 @@ docker-mongo: ## Start only MongoDB container
 
 docker-run-prod: ## Run production image locally (simulates prod environment)
 	@echo "Starting production environment (version: $(VERSION))..."
-	@VERSION=$(VERSION) docker compose -f compose.yml -f compose.run.yml up -d
+	@VERSION=$(VERSION) docker compose -f compose.yml -f compose.prod.yml up -d
 
 docker-stop: ## Stop all Docker containers
 	@docker compose -f compose.yml -f compose.run.yml down || docker compose -f compose.yml down

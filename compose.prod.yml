@@ -1,6 +1,8 @@
 services:
   go_template_app:
-    image: drglasdou/go_template:${VERSION:-latest}
+    build:
+      context: .
+      dockerfile: dockerfile.prod
     container_name: go_template_app
     restart: always
     env_file:
